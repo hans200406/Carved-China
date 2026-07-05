@@ -1,4 +1,5 @@
 import { filterProjects, summarizeProjects } from './data-model.mjs';
+import { motifProfile, schoolPalette } from './art-model.mjs';
 
 const palette = ['#B6342B', '#D5A33A', '#39705A', '#704536', '#1E1915'];
 const colorNames = { '#B6342B': '朱砂', '#D5A33A': '藤黄', '#39705A': '石绿', '#704536': '木褐', '#1E1915': '墨色' };
@@ -52,6 +53,8 @@ function updateLinkedCharts() {
 
 const filter = document.getElementById('school-filter');
 projects.forEach(p => filter.add(new Option(p.school, p.school)));
+const artSchool = document.getElementById('art-school');
+projects.forEach(p => artSchool.add(new Option(p.school, p.school)));
 filter.addEventListener('change', () => { activeSchool = filter.value; updateLinkedCharts(); });
 document.getElementById('reset-filter').addEventListener('click', () => { activeSchool = ''; filter.value = ''; updateLinkedCharts(); });
 mapChart?.on('click', ({ data }) => { activeSchool = data.school; filter.value = activeSchool; updateLinkedCharts(); document.getElementById('subjects').scrollIntoView({ behavior: 'smooth' }); });
@@ -60,10 +63,11 @@ updateLinkedCharts();
 const summary = summarizeProjects(projects);
 document.getElementById('project-count').textContent = summary.projects;
 document.getElementById('province-count').textContent = summary.provinces;
+document.getElementById('hero-project-count').textContent = summary.projects;
 const topSubject = Object.entries(summary.subjects).sort((a,b)=>b[1]-a[1])[0];
 const topColor = Object.entries(summary.colors).sort((a,b)=>b[1]-a[1])[0];
 document.getElementById('insights').innerHTML = `
-  <article class="insight"><strong>9个省级地区</strong><p>10项首批国家级样本分布在9个省级地区，山东是样本中唯一出现两项的地区。</p></article>
+  <article class="insight"><strong>${summary.provinces}个省级地区</strong><p>${summary.projects}项首批国家级样本分布在${summary.provinces}个省级地区，形成跨越南北的年画地理谱系。</p></article>
   <article class="insight"><strong>${topSubject[0]}最常见</strong><p>统一编码后，该题材出现在${topSubject[1]}个样本中，显示年画首先承担春节空间中的仪式与祈愿功能。</p></article>
   <article class="insight"><strong>${colorNames[topColor[0]]}形成共性</strong><p>${topColor[1]}个样本的代表色编码包含${colorNames[topColor[0]]}；颜色比较是描述性编码，不等同于作品像素统计。</p></article>`;
 
@@ -74,21 +78,34 @@ if (window.p5) {
   const sketch = (p) => {
     p.setup = () => { const canvas = p.createCanvas(520, 520); canvas.parent('art-canvas'); p.noLoop(); };
     p.draw = () => {
+      const profile = motifProfile(document.getElementById('motif').value);
+      const artPalette = schoolPalette(artSchool.value);
       p.randomSeed(seed); p.background('#F3EBDD'); p.translate(p.width/2, p.height/2);
       const density = Number(document.getElementById('density').value);
       for (let ring=1; ring<=density; ring++) {
-        const count = ring * 4;
+        const count = ring * profile.rhythm;
         for (let i=0; i<count; i++) {
           p.push(); p.rotate((p.TWO_PI/count)*i); p.translate(ring*31,0); p.rotate(p.PI/4);
-          p.noStroke(); p.fill(palette[(ring+i)%4]);
+          p.noStroke(); p.fill(artPalette[(ring+i)%4]);
           const size = 13 + p.random(8); p.quad(0,-size, size*.7,0,0,size,-size*.7,0); p.pop();
         }
       }
       p.noFill(); p.stroke('#1E1915'); p.strokeWeight(8); p.rectMode(p.CENTER); p.rect(0,0,470,470);
-      p.fill('#B6342B'); p.noStroke(); p.circle(0,0,88); p.fill('#D5A33A'); p.circle(0,0,42);
+      p.noStroke(); p.fill(artPalette[0]);
+      if (profile.center === 'shield') {
+        p.beginShape(); p.vertex(-52,-60); p.vertex(52,-60); p.vertex(42,28); p.vertex(0,70); p.vertex(-42,28); p.endShape(p.CLOSE);
+        p.fill(artPalette[1]); p.rect(0,-8,18,88);
+      } else if (profile.center === 'fish') {
+        p.ellipse(-12,0,104,58); p.triangle(30,0,76,-42,76,42); p.fill('#F3EBDD'); p.circle(-38,-8,8);
+      } else {
+        for (let i=0; i<profile.symmetry; i++) { p.push(); p.rotate(i*p.TWO_PI/profile.symmetry); p.ellipse(0,-34,30,72); p.pop(); }
+        p.fill(artPalette[1]); p.circle(0,0,36);
+      }
     };
     document.getElementById('regenerate').addEventListener('click', () => { seed += 1; p.redraw(); });
     document.getElementById('density').addEventListener('input', () => p.redraw());
+    document.getElementById('motif').addEventListener('change', () => p.redraw());
+    artSchool.addEventListener('change', () => p.redraw());
     document.getElementById('download-art').addEventListener('click', () => p.saveCanvas('版上山河-生成纹样', 'png'));
   };
   new window.p5(sketch);

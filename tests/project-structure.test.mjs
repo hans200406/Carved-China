@@ -30,7 +30,9 @@ test('generated canvas scales within narrow viewports', async () => {
 
 test('processed project dataset has provenance and required fields', async () => {
   const projects = JSON.parse(await readFile(new URL('data/processed/projects.json', root), 'utf8'));
-  assert.ok(projects.length >= 10);
+  assert.ok(projects.length >= 12);
+  assert.ok(projects.some((item) => item.id === 'mianzhu'));
+  assert.ok(projects.some((item) => item.id === 'fengxiang'));
   for (const project of projects) {
     assert.ok(project.id);
     assert.ok(project.school);
