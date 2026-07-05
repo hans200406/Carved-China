@@ -16,3 +16,8 @@ test('poster includes title, data evidence, insights, and generative artwork', a
     assert.match(html, new RegExp(marker));
   }
 });
+
+test('poster does not reserve space for a QR code', async () => {
+  const html = await readFile(new URL('poster/poster.html', root), 'utf8');
+  assert.doesNotMatch(html, /二维码|<div class="qr-placeholder"/i);
+});
