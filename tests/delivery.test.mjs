@@ -15,6 +15,7 @@ test('GitHub Pages workflow publishes the static project', async () => {
   assert.match(workflow, /actions\/upload-pages-artifact/);
   assert.match(workflow, /actions\/deploy-pages/);
   assert.match(workflow, /path:\s*\./);
+  assert.match(workflow, /enablement:\s*true/);
 });
 
 test('submission checklist covers all task-book deliverables', async () => {
