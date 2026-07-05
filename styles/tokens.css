@@ -1,0 +1,25 @@
+:root {
+  --paper: #f3ebdd;
+  --paper-deep: #e7dac5;
+  --ink: #1e1915;
+  --ink-soft: #5f5047;
+  --cinnabar: #b6342b;
+  --cinnabar-dark: #84241f;
+  --rattan: #d5a33a;
+  --stone-green: #39705a;
+  --wood: #704536;
+  --hairline: rgba(30, 25, 21, 0.18);
+  --display: "Noto Serif SC", "Source Han Serif SC", SimSun, serif;
+  --body: "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --radius: 10px;
+  --container: 1200px;
+}
