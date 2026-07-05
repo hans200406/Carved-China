@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-07-05T16:18:46.639Z",
+  "summary": {
+    "projects": 12,
+    "provinces": 11,
+    "schools": 12,
+    "subjects": {
+      "吉祥祈福": 11,
+      "娃娃仕女": 3,
+      "民俗生活": 6,
+      "门神驱邪": 8,
+      "戏曲故事": 9,
+      "花鸟瑞兽": 4
+    },
+    "colors": {
+      "#B6342B": 12,
+      "#D5A33A": 11,
+      "#39705A": 10,
+      "#1E1915": 6
+    }
+  },
+  "coverage": {
+    "detailSources": 1,
+    "coordinates": 1,
+    "subjects": 1,
+    "colors": 1
+  },
+  "errors": []
+}

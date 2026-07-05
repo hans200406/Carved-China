@@ -55,3 +55,20 @@ test('page uses bundled chart and generative-art dependencies for offline delive
   assert.match(html, /vendor\/p5\.min\.js/);
   assert.doesNotMatch(html, /cdn\.jsdelivr\.net/);
 });
+
+test('atlas registers a local China GeoJSON map instead of a coordinate-only plot', async () => {
+  const app = await readFile(new URL('scripts/app.mjs', root), 'utf8');
+  const geo = JSON.parse(await readFile(new URL('data/processed/china.geojson', root), 'utf8'));
+  assert.match(app, /registerMap\(['"]中国['"]/);
+  assert.match(app, /type:\s*['"]map['"]/);
+  assert.equal(geo.type, 'FeatureCollection');
+  assert.ok(geo.features.length >= 30);
+});
+
+test('page includes reduced-motion-aware scroll reveal behavior', async () => {
+  const html = await readFile(new URL('index.html', root), 'utf8');
+  const app = await readFile(new URL('scripts/app.mjs', root), 'utf8');
+  assert.match(html, /class="section[^"\n]*reveal/);
+  assert.match(app, /IntersectionObserver/);
+  assert.match(app, /prefers-reduced-motion/);
+});

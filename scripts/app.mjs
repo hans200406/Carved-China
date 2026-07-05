@@ -1,11 +1,17 @@
 import { filterProjects, summarizeProjects } from './data-model.mjs';
 import { motifProfile, schoolPalette } from './art-model.mjs';
 
+document.documentElement.classList.add('js');
+
 const palette = ['#B6342B', '#D5A33A', '#39705A', '#704536', '#1E1915'];
 const colorNames = { '#B6342B': '朱砂', '#D5A33A': '藤黄', '#39705A': '石绿', '#704536': '木褐', '#1E1915': '墨色' };
 const response = await fetch('data/processed/projects.json');
 if (!response.ok) throw new Error(`数据加载失败：${response.status}`);
 const projects = await response.json();
+const geoResponse = await fetch('data/processed/china.geojson');
+if (!geoResponse.ok) throw new Error(`地图加载失败：${geoResponse.status}`);
+const chinaGeoJSON = await geoResponse.json();
+window.echarts?.registerMap('中国', chinaGeoJSON);
 let activeSchool = '';
 const charts = [];
 
@@ -20,11 +26,19 @@ function chartAt(id, option) {
 
 const text = { color: '#5f5047', fontFamily: 'Microsoft YaHei, sans-serif' };
 const mapChart = chartAt('map-chart', {
-  tooltip: { formatter: ({ data }) => `${data.name}<br>${data.city}<br>列入：${data.batch}年` },
-  grid: { left: 54, right: 20, top: 30, bottom: 48 },
-  xAxis: { name: '东经', min: 103, max: 123, axisLabel: text, splitLine: { lineStyle: { color: 'rgba(30,25,21,.08)' } } },
-  yAxis: { name: '北纬', min: 20, max: 41, axisLabel: text, splitLine: { lineStyle: { color: 'rgba(30,25,21,.08)' } } },
-  series: [{ type: 'scatter', symbolSize: 17, itemStyle: { color: palette[0], borderColor: '#F3EBDD', borderWidth: 2 }, data: projects.map(p => ({ name: p.school, value: [p.longitude, p.latitude], ...p })) }]
+  tooltip: { formatter: ({ data, componentType }) => componentType === 'markPoint' ? `${data.name}<br>${data.city}<br>列入：${data.batch}年` : data?.name || '' },
+  series: [{
+    type: 'map', map: '中国', roam: true, scaleLimit: { min: 1, max: 5 },
+    itemStyle: { areaColor: '#E7DAC5', borderColor: '#9A7965', borderWidth: .8 },
+    emphasis: { itemStyle: { areaColor: '#D5A33A' }, label: { color: '#1E1915' } },
+    label: { show: false },
+    markPoint: {
+      symbol: 'circle', symbolSize: 14,
+      itemStyle: { color: palette[0], borderColor: '#F3EBDD', borderWidth: 2 },
+      data: projects.map(p => ({ name: p.school, coord: [p.longitude, p.latitude], ...p }))
+    },
+    data: []
+  }]
 });
 
 chartAt('timeline-chart', {
@@ -57,7 +71,11 @@ const artSchool = document.getElementById('art-school');
 projects.forEach(p => artSchool.add(new Option(p.school, p.school)));
 filter.addEventListener('change', () => { activeSchool = filter.value; updateLinkedCharts(); });
 document.getElementById('reset-filter').addEventListener('click', () => { activeSchool = ''; filter.value = ''; updateLinkedCharts(); });
-mapChart?.on('click', ({ data }) => { activeSchool = data.school; filter.value = activeSchool; updateLinkedCharts(); document.getElementById('subjects').scrollIntoView({ behavior: 'smooth' }); });
+mapChart?.on('click', ({ data, componentType }) => {
+  if (componentType !== 'markPoint' || !data?.school) return;
+  activeSchool = data.school; filter.value = activeSchool; updateLinkedCharts();
+  document.getElementById('subjects').scrollIntoView({ behavior: 'smooth' });
+});
 updateLinkedCharts();
 
 const summary = summarizeProjects(projects);
@@ -72,6 +90,21 @@ document.getElementById('insights').innerHTML = `
   <article class="insight"><strong>${colorNames[topColor[0]]}形成共性</strong><p>${topColor[1]}个样本的代表色编码包含${colorNames[topColor[0]]}；颜色比较是描述性编码，不等同于作品像素统计。</p></article>`;
 
 window.addEventListener('resize', () => charts.forEach(chart => chart.resize()));
+
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const revealTargets = [...document.querySelectorAll('.reveal')];
+if (reducedMotion || !('IntersectionObserver' in window)) {
+  revealTargets.forEach((node) => node.classList.add('is-visible'));
+} else {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.12 });
+  revealTargets.forEach((node) => revealObserver.observe(node));
+}
 
 if (window.p5) {
   let seed = 20260705;
