@@ -32,3 +32,9 @@ test('offline dependencies and poster exist', async () => {
     access(new URL('poster/版上山河-课程展览海报.png', root)),
   ]);
 });
+
+test('online access document records the verified Pages URL', async () => {
+  const online = await readFile(new URL('在线访问说明.md', root), 'utf8');
+  assert.match(online, /https:\/\/hans200406\.github\.io\/Carved-China\//);
+  assert.match(online, /已验证/);
+});
