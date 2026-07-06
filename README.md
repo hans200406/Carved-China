@@ -4,21 +4,13 @@
 
 在线版本：https://hans200406.github.io/Carved-China/
 
-## 本地运行
+## 访问方式
 
-推荐双击 `启动项目.cmd`，程序会启动本地服务器并在 Microsoft Edge 中打开：
+使用 Microsoft Edge 打开在线版本：
 
-`http://127.0.0.1:8038`
+https://hans200406.github.io/Carved-China/
 
-也可在项目目录手动启动静态服务器：
-
-```powershell
-python -m http.server 8000
-```
-
-浏览器打开 `http://localhost:8000`。请勿直接双击 `index.html`，否则浏览器会限制模块和本地 JSON 加载。
-
-执行数据审计并重新生成 `data/processed/audit-summary.json`：
+如需重新生成数据审计文件，可运行：
 
 ```powershell
 node tools/audit-data.mjs
